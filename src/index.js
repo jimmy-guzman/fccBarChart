@@ -6,6 +6,7 @@ const dataUrl =
   "https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/GDP-data.json";
 
 const formatCurrency = d3.format("$,.2f");
+const t = d3.transition().duration(750);
 
 const margin = {
   top: 0,
@@ -14,7 +15,10 @@ const margin = {
   left: 80
 };
 
-const width = 800 - margin.left - margin.right,
+const width =
+    parseInt(d3.select("#chart-area").style("width")) -
+    margin.left -
+    margin.right,
   height = 500 - margin.top - margin.bottom;
 
 const g = d3
@@ -37,9 +41,9 @@ const xAxisGroup = g
   .attr("transform", `translate(0,${height})`);
 
 const yAxisGroup = g.append("g").attr("class", "y axis");
+
 // Scales
 const xScale = d3.scaleTime().range([0, width]);
-
 const yScale = d3.scaleLinear().range([height, 0]);
 
 // X Label
@@ -64,19 +68,25 @@ g
   .text("Gross Domestic Product, USA");
 
 d3.json(dataUrl).then(response => {
-  update(response.data);
+  const data = response.data.map(
+    d =>
+      (d = {
+        date: d[0],
+        gdp: d[1]
+      })
+  );
+  update(data);
 });
 
 function update(data) {
-  const minDate = new Date(data[0][0]);
-
-  const maxDate = new Date(data[274][0]);
+  const minDate = new Date(data[0].date);
+  const maxDate = new Date(data[data.length - 1].date);
   const barWidth = Math.ceil(width / data.length);
 
   xScale.domain([minDate, maxDate]);
-  yScale.domain([0, d3.max(data, d => d[1])]);
+  yScale.domain([0, d3.max(data, d => d.gdp)]);
 
-  const xAxisCall = d3.axisBottom(xScale).ticks(d3.timeYear.every());
+  const xAxisCall = d3.axisBottom(xScale);
   xAxisGroup.call(xAxisCall);
 
   const yAxisCall = d3.axisRight(yScale).tickSize(width);
@@ -87,38 +97,61 @@ function update(data) {
     .attr("x", "0")
     .attr("text-anchor", "start");
 
-  const rects = g
-    .selectAll("rect")
-    .data(data)
+  // JOIN new data with old elements
+  const rects = g.selectAll("rect").data(data, d => d.date);
+
+  // EXIT old elements not present in new data
+  rects
+    .exit()
+    .attr("fill", "red")
+    .transition(t)
+    .attr("y", yScale(0))
+    .attr("height", 0)
+    .remove();
+
+  // ENTER new elements present in new data
+  rects
     .enter()
     .append("rect")
-    .attr("x", d => xScale(new Date(d[0])))
-    .attr("y", d => yScale(d[1]))
-    .attr("width", barWidth)
-    .attr("height", d => height - yScale(d[1]))
     .attr("fill", "#2F736C")
-    .on("mouseover", function(d) {
-      d3.select(this).attr("fill", "#b4fef7");
-      div
-        .transition()
-        .duration(200)
-        .style("opacity", 0.9);
-      div
-        .html(
-          `<span class='amount'> ${formatCurrency(
-            d[1]
-          )}B </span><span class='year'>${moment(d[0]).format(
-            "YYYY - MMM"
-          )}<span>`
-        )
-        .style("left", d3.event.pageX + "px")
-        .style("top", d3.event.pageY - 28 + "px");
-    })
-    .on("mouseout", function(d) {
-      d3.select(this).attr("fill", "#2F736C");
-      div
-        .transition()
-        .duration(500)
-        .style("opacity", 0);
-    });
+    .attr("opacity", ".9")
+    .attr("x", d => xScale(new Date(d.date)))
+    .attr("width", barWidth)
+    .attr("y", yScale(0))
+    .attr("height", 0)
+    .on("mouseover", handleMouseover)
+    .on("mouseout", handleMouseout)
+    // And UPDATE old elements present in new data
+    .merge(rects)
+    .transition(t)
+    .attr("x", d => xScale(new Date(d.date)))
+    .attr("width", barWidth)
+    .attr("y", d => yScale(d.gdp))
+    .attr("height", d => height - yScale(d.gdp));
+}
+
+function handleMouseover(d) {
+  d3.select(this).attr("fill", "#b4fef7");
+  div
+    .transition()
+    .duration(200)
+    .style("opacity", 0.9);
+  div
+    .html(
+      `<span class='amount'> ${formatCurrency(
+        d.gdp
+      )}B </span><span class='year'>${moment(d.date).format(
+        "YYYY - MMM"
+      )}<span>`
+    )
+    .style("left", d3.event.pageX + "px")
+    .style("top", d3.event.pageY - 28 + "px");
+}
+
+function handleMouseout(d) {
+  d3.select(this).attr("fill", "#2F736C");
+  div
+    .transition()
+    .duration(500)
+    .style("opacity", 0);
 }

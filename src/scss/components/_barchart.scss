@@ -3,10 +3,14 @@
 }
 
 .y .tick:not(:first-of-type) line {
-  stroke: #777;
+  stroke: #5a7e7b;
   stroke-dasharray: 2, 2;
 }
 
 .y .tick:first-of-type line {
   display: none;
+}
+
+#chart-area {
+  width: 100%;
 }
