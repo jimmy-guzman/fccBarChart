@@ -1,4 +1,12 @@
-#chart-area {
-  width: 100%;
-  height: 100%;
+.domain {
+  display: none;
+}
+
+.y .tick:not(:first-of-type) line {
+  stroke: #777;
+  stroke-dasharray: 2, 2;
+}
+
+.y .tick:first-of-type line {
+  display: none;
 }

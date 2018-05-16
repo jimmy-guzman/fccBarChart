@@ -8,16 +8,13 @@ const dataUrl =
 const formatCurrency = d3.format("$,.2f");
 
 const margin = {
-  top: 10,
-  right: 10,
+  top: 0,
+  right: 20,
   bottom: 100,
-  left: 100
+  left: 80
 };
 
-const width =
-    parseInt(d3.select("#chart-area").style("width")) -
-    margin.left -
-    margin.right,
+const width = 800 - margin.left - margin.right,
   height = 500 - margin.top - margin.bottom;
 
 const g = d3
@@ -26,7 +23,7 @@ const g = d3
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
   .append("g")
-  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 const div = d3
   .select("body")
@@ -37,11 +34,12 @@ const div = d3
 const xAxisGroup = g
   .append("g")
   .attr("class", "x axis")
-  .attr("transform", "translate(0, " + height + ")");
+  .attr("transform", `translate(0,${height})`);
 
 const yAxisGroup = g.append("g").attr("class", "y axis");
 // Scales
 const xScale = d3.scaleTime().range([0, width]);
+
 const yScale = d3.scaleLinear().range([height, 0]);
 
 // X Label
@@ -49,7 +47,7 @@ g
   .append("text")
   .attr("class", "x axis-label")
   .attr("x", width / 2)
-  .attr("y", height + 60)
+  .attr("y", height + 50)
   .attr("font-size", "20px")
   .attr("text-anchor", "middle")
   .text("Years");
@@ -59,7 +57,7 @@ g
   .append("text")
   .attr("class", "y axis-label")
   .attr("x", -(height / 2))
-  .attr("y", -60)
+  .attr("y", -20)
   .attr("font-size", "20px")
   .attr("text-anchor", "middle")
   .attr("transform", "rotate(-90)")
@@ -78,11 +76,16 @@ function update(data) {
   xScale.domain([minDate, maxDate]);
   yScale.domain([0, d3.max(data, d => d[1])]);
 
-  const xAxisCall = d3.axisBottom(xScale);
+  const xAxisCall = d3.axisBottom(xScale).ticks(d3.timeYear.every());
   xAxisGroup.call(xAxisCall);
 
-  const yAxisCall = d3.axisLeft(yScale).ticks(9);
-  yAxisGroup.call(yAxisCall);
+  const yAxisCall = d3.axisRight(yScale).tickSize(width);
+  yAxisGroup
+    .call(yAxisCall)
+    .selectAll("text")
+    .attr("y", "10")
+    .attr("x", "0")
+    .attr("text-anchor", "start");
 
   const rects = g
     .selectAll("rect")
