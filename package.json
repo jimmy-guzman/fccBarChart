@@ -1,18 +1,16 @@
 {
   "name": "fccbarchart",
+  "homepage": "https://jimmyguzman.com/fccBarChart/",
   "version": "1.0.0",
-  "description": "Bar chart made with d3 for freeCodeCamp Data Visualization Certification",
+  "description":
+    "Bar chart made with d3 for freeCodeCamp Data Visualization Certification",
   "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server --open --mode development",
     "build": "webpack --mode production",
-    "deploy": "npm run build && gh-pages"
+    "deploy": "npm run build && gh-pages -d dist"
   },
-  "keywords": [
-    "bar chart",
-    "d3",
-    "free code camp"
-  ],
+  "keywords": ["bar chart", "d3", "free code camp"],
   "author": "Jimmy Guzman",
   "license": "ISC",
   "devDependencies": {
@@ -36,7 +34,5 @@
     "webpack-cli": "^2.1.3",
     "webpack-dev-server": "^3.1.4"
   },
-  "browserslist": [
-    "last 2 versions"
-  ]
+  "browserslist": ["last 2 versions"]
 }
